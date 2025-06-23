@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pedra, Papel ou Tesoura - 2 Jogadores</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #fff;
+      text-align: center;
+      padding: 30px;
+    }
+    h1 {
+      margin-bottom: 10px;
+      font-size: 3em;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    }
+    .placar {
+      font-size: 1.5em;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      gap: 50px;
+      font-weight: bold;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+    .jogador {
+      background: rgba(255,255,255,0.2);
+      padding: 15px 25px;
+      border-radius: 10px;
+      width: 150px;
+    }
+    .botoes-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+    .botoes-jogador {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(255,255,255,0.15);
+      padding: 15px 20px;
+      border-radius: 12px;
+      width: 180px;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 12px 0;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #222;
+      font-weight: bold;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 4px 4px 12px rgba(0,0,0,0.3);
+    }
+    /* Cores para os botões */
+    .pedra { background: #d32f2f; }
+    .papel { background: #1976d2; color: white; }
+    .tesoura { background: #388e3c; color: white; }
+
+    #mensagem {
+      margin-top: 30px;
+      font-size: 1.8em;
+      font-weight: 700;
+      min-height: 60px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+
+    #reiniciar {
+      margin-top: 40px;
+      font-size: 1.2em;
+      padding: 10px 25px;
+      border-radius: 12px;
+      background: #ffb300;
+      color: #222;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+    #reiniciar:hover {
+      background: #ffa000;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pedra, Papel ou Tesoura</h1>
+
+  <div class="placar">
+    <div class="jogador">
+      Jogador 1<br><span id="pontos1">5</span> pontos
+    </div>
+    <div class="jogador">
+      Jogador 2<br><span id="pontos2">5</span> pontos
+    </div>
+  </div>
+
+  <div id="mensagem">Jogador 1, escolha sua jogada!</div>
+
+  <div class="botoes-container">
+    <div class="botoes-jogador" id="botoes-jogador1">
+      <button class="pedra" onclick="jogar(1, 'pedra')">✊ Pedra</button>
+      <button class="papel" onclick="jogar(1, 'papel')">✋ Papel</button>
+      <button class="tesoura" onclick="jogar(1, 'tesoura')">✌ Tesoura</button>
+    </div>
+    <div class="botoes-jogador" id="botoes-jogador2" style="pointer-events:none; opacity:0.5;">
+      <button class="pedra" onclick="jogar(2, 'pedra')">✊ Pedra</button>
+      <button class="papel" onclick="jogar(2, 'papel')">✋ Papel</button>
+      <button class="tesoura" onclick="jogar(2, 'tesoura')">✌ Tesoura</button>
+    </div>
+  </div>
+
+  <button id="reiniciar" onclick="reiniciar()">Reiniciar Jogo</button>
+
+  <script>
+    let pontos1 = 5;
+    let pontos2 = 5;
+    let escolhaJogador1 = null;
+    let escolhaJogador2 = null;
+    let vezJogador = 1;
+
+    const pontos1El = document.getElementById('pontos1');
+    const pontos2El = document.getElementById('pontos2');
+    const mensagemEl = document.getElementById('mensagem');
+    const botoesJogador1 = document.getElementById('botoes-jogador1');
+    const botoesJogador2 = document.getElementById('botoes-jogador2');
+    const reiniciarBtn = document.getElementById('reiniciar');
+
+    function atualizarPlacar() {
+      pontos1El.textContent = pontos1;
+      pontos2El.textContent = pontos2;
+    }
+
+    function ativarJogador(num) {
+      vezJogador = num;
+      mensagemEl.textContent = `Jogador ${num}, escolha sua jogada!`;
+      if (num === 1) {
+        botoesJogador1.style.pointerEvents = 'auto';
+        botoesJogador1.style.opacity = '1';
+        botoesJogador2.style.pointerEvents = 'none';
+        botoesJogador2.style.opacity = '0.5';
+      } else {
+        botoesJogador1.style.pointerEvents = 'none';
+        botoesJogador1.style.opacity = '0.5';
+        botoesJogador2.style.pointerEvents = 'auto';
+        botoesJogador2.style.opacity = '1';
+      }
+    }
+
+    function decidirVencedor() {
+      if (escolhaJogador1 === escolhaJogador2) {
+        mensagemEl.textContent = `Empate! Ambos escolheram ${escolhaJogador1}.`;
+        return 0; // empate
+      }
+      if (
+        (escolhaJogador1 === 'pedra' && escolhaJogador2 === 'tesoura') ||
+        (escolhaJogador1 === 'papel' && escolhaJogador2 === 'pedra') ||
+        (escolhaJogador1 === 'tesoura' && escolhaJogador2 === 'papel')
+      ) {
+        pontos2--;
+        mensagemEl.textContent = `Jogador 1 venceu! ${escolhaJogador1} ganha de ${escolhaJogador2}.`;
+        return 1; // jogador 1 venceu
+      } else {
+        pontos1--;
+        mensagemEl.textContent = `Jogador 2 venceu! ${escolhaJogador2} ganha de ${escolhaJogador1}.`;
+        return 2; // jogador 2 venceu
+      }
+    }
+
+    function jogar(jogador, escolha) {
+      if (vezJogador !== jogador) return;
+
+      if (jogador === 1) {
+        escolhaJogador1 = escolha;
+        ativarJogador(2);
+      } else {
+        escolhaJogador2 = escolha;
+        // Depois da escolha do jogador 2, decide quem ganhou
+        decidirVencedor();
+        atualizarPlacar();
+
+        // Checa se alguém zerou os pontos
+        if (pontos1 === 0 || pontos2 === 0) {
+          mensagemEl.textContent += ` Fim de jogo! ${pontos1 === 0 ? 'Jogador 2' : 'Jogador 1'} venceu o jogo! 🏆`;
+          botoesJogador1.style.pointerEvents = 'none';
+          botoesJogador2.style.pointerEvents = 'none';
+          return;
+        }
+
+        // Volta pra vez do jogador 1
+        ativarJogador(1);
+      }
+    }
+
+    function reiniciar() {
+      pontos1 = 5;
+      pontos2 = 5;
+      escolhaJogador1 = null;
+      escolhaJogador2 = null;
+      atualizarPlacar();
+      ativarJogador(1);
+      mensagemEl.textContent = 'Jogador 1, escolha sua jogada!';
+      botoesJogador1.style.pointerEvents = 'auto';
+      botoesJogador1.style.opacity = '1';
+      botoesJogador2.style.pointerEvents = 'none';
+      botoesJogador2.style.opacity = '0.5';
+    }
+
+    // Inicializa o jogo
+    reiniciar();
+  </script>
+</body>
+</html>
